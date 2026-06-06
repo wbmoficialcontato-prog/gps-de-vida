@@ -341,36 +341,9 @@ Quando a pessoa entrar, faça a apresentação inicial, detecte o módulo, retom
 Pause quando necessário. Convide oração. Deixe meditando.
 Nunca conclua. Sempre deixe espaço para Deus.`;
 
-// Upstash Redis via REST API (sem dependência externa)
-async function redisGet(key) {
-  const url = `${process.env.KV_REST_API_URL}/get/${encodeURIComponent(key)}`;
-  const res = await fetch(url, {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` }
-  });
-  if (!res.ok) {
-    console.error('Redis GET HTTP error:', res.status);
-    return null;
-  }
-  const data = await res.json();
-  console.log('Redis GET raw:', JSON.stringify(data).slice(0, 100));
-  return data.result || null;
-}
+const { Redis } = require('@upstash/redis');
 
-async function redisSet(key, value) {
-  const url = `${process.env.KV_REST_API_URL}/set/${encodeURIComponent(key)}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ value })
-  });
-  if (!res.ok) {
-    console.error('Redis SET HTTP error:', res.status);
-  }
-}
+const redis = Redis.fromEnv();
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -389,7 +362,7 @@ module.exports = async function handler(req, res) {
     // Buscar histórico salvo
     let historicoSalvo = [];
     try {
-      const salvo = await redisGet(chave);
+      const salvo = await redis.get(chave);
       console.log('Redis GET resultado:', salvo ? 'encontrado' : 'vazio', '| chave:', chave);
       if (salvo) {
         historicoSalvo = typeof salvo === 'string' ? JSON.parse(salvo) : salvo;
@@ -446,7 +419,7 @@ module.exports = async function handler(req, res) {
     if (resposta && nome && palavraChave) {
       try {
         const novoHistorico = [...mensagensFinais, { role: 'assistant', content: resposta }].slice(-40);
-        await redisSet(chave, JSON.stringify(novoHistorico));
+        await redis.set(chave, JSON.stringify(novoHistorico));
         console.log('Historico salvo:', novoHistorico.length, 'mensagens | chave:', chave);
       } catch (e) {
         console.error('Erro ao salvar historico:', e.message);
