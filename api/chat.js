@@ -381,8 +381,10 @@ module.exports = async function handler(req, res) {
     let historicoSalvo = [];
     try {
       const salvo = await redisGet(chave);
+      console.log('Redis GET resultado:', salvo ? 'encontrado' : 'vazio', '| chave:', chave);
       if (salvo) {
         historicoSalvo = typeof salvo === 'string' ? JSON.parse(salvo) : salvo;
+        console.log('Historico carregado:', historicoSalvo.length, 'mensagens');
       }
     } catch (e) {
       console.error('Erro ao buscar historico:', e.message);
@@ -436,6 +438,7 @@ module.exports = async function handler(req, res) {
       try {
         const novoHistorico = [...mensagensFinais, { role: 'assistant', content: resposta }].slice(-40);
         await redisSet(chave, JSON.stringify(novoHistorico));
+        console.log('Historico salvo:', novoHistorico.length, 'mensagens | chave:', chave);
       } catch (e) {
         console.error('Erro ao salvar historico:', e.message);
       }
