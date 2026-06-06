@@ -96,7 +96,7 @@ Quando sai do tema: "Vamos permanecer nessa reflexão antes de avançar."
 Quando profundo demais: convide oração, registre, avance sem resolver.
 Nunca conclua por ela. Sempre deixe espaço para Deus.`;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
