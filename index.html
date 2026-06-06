@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPS de Vida — Jornada Identidade & Propósito</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --cream: #F7F3ED;
+    --text-dark: #2C2419;
+    --text-mid: #6B5B47;
+    --text-light: #A89880;
+    --gold: #C4923A;
+    --border: rgba(196, 146, 58, 0.18);
+    --bubble-bot: rgba(255,255,255,0.7);
+  }
+  body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--text-dark); min-height: 100vh; display: flex; flex-direction: column; }
+  header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(247,243,237,0.92); backdrop-filter: blur(12px); border-bottom: 0.5px solid var(--border); padding: 0 24px; height: 64px; display: flex; align-items: center; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--text-dark); display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { width: 18px; height: 18px; }
+  .logo-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 500; color: var(--text-dark); line-height: 1.1; }
+  .logo-sub { font-size: 10px; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); }
+  main { flex: 1; padding-top: 64px; padding-bottom: 120px; display: flex; flex-direction: column; }
+  #messages { flex: 1; padding: 32px 0; display: flex; flex-direction: column; }
+  .msg-wrap { padding: 6px 24px; display: flex; flex-direction: column; animation: fadeSlide 0.35s ease forwards; opacity: 0; max-width: 760px; margin: 0 auto; width: 100%; }
+  @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .msg-wrap.user { align-items: flex-end; }
+  .msg-wrap.bot { align-items: flex-start; }
+  .bubble { max-width: 72%; padding: 14px 18px; border-radius: 18px; font-size: 15px; line-height: 1.65; font-weight: 300; }
+  .msg-wrap.user .bubble { background: var(--text-dark); color: #F7F3ED; border-radius: 18px 18px 4px 18px; }
+  .msg-wrap.bot .bubble { background: var(--bubble-bot); color: var(--text-dark); border: 0.5px solid var(--border); border-radius: 18px 18px 18px 4px; backdrop-filter: blur(8px); }
+  .bot-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--text-dark); display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+  .bot-avatar svg { width: 14px; height: 14px; }
+  .typing-bubble { background: var(--bubble-bot); border: 0.5px solid var(--border); border-radius: 18px 18px 18px 4px; padding: 14px 20px; display: flex; gap: 5px; align-items: center; }
+  .typing-bubble span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-light); animation: bounce 1.2s infinite; }
+  .typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
+  #welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 48px 24px; text-align: center; gap: 20px; }
+  .welcome-icon { width: 72px; height: 72px; border-radius: 50%; background: var(--text-dark); display: flex; align-items: center; justify-content: center; }
+  .welcome-icon svg { width: 32px; height: 32px; }
+  .welcome-title { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 400; color: var(--text-dark); }
+  .welcome-sub { font-size: 14px; font-weight: 300; color: var(--text-mid); max-width: 340px; line-height: 1.7; }
+  .welcome-verse { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px; color: var(--text-light); max-width: 300px; line-height: 1.6; }
+  .welcome-divider { width: 40px; height: 0.5px; background: var(--gold); opacity: 0.5; }
+  #input-area { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(247,243,237,0.95); backdrop-filter: blur(16px); border-top: 0.5px solid var(--border); padding: 16px 24px 24px; z-index: 100; }
+  .input-inner { max-width: 760px; margin: 0 auto; display: flex; gap: 10px; align-items: flex-end; }
+  #user-input { flex: 1; background: white; border: 0.5px solid var(--border); border-radius: 22px; padding: 13px 20px; font-family: 'Jost', sans-serif; font-size: 15px; font-weight: 300; color: var(--text-dark); outline: none; resize: none; max-height: 140px; line-height: 1.5; transition: border-color 0.2s; }
+  #user-input::placeholder { color: var(--text-light); }
+  #user-input:focus { border-color: rgba(196,146,58,0.4); }
+  #send-btn { width: 44px; height: 44px; border-radius: 50%; background: var(--text-dark); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s, transform 0.1s; }
+  #send-btn:hover { background: #4a3d2e; }
+  #send-btn:active { transform: scale(0.95); }
+  #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  #send-btn svg { width: 18px; height: 18px; }
+  .input-hint { text-align: center; font-size: 11px; color: var(--text-light); margin-top: 10px; letter-spacing: 0.04em; }
+  .error-bubble { background: rgba(180,60,60,0.08); border: 0.5px solid rgba(180,60,60,0.2); color: #8B3333; padding: 12px 16px; border-radius: 12px; font-size: 13px; }
+  @media (max-width: 600px) { .bubble { max-width: 88%; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#F7F3ED" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+    </div>
+    <div>
+      <div class="logo-name">GPS de Vida</div>
+      <div class="logo-sub">Jornada Identidade & Propósito</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="welcome">
+    <div class="welcome-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#F7F3ED" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+    </div>
+    <div class="welcome-title">Bem-vinda à sua Jornada</div>
+    <div class="welcome-sub">Estou aqui para caminhar com você através de Identidade & Propósito. Comece quando estiver pronta.</div>
+    <div class="welcome-divider"></div>
+    <div class="welcome-verse">"Pois somos criação de Deus, realizados em Cristo Jesus." — Ef 2:10</div>
+  </div>
+  <div id="messages" style="display:none;">
+    <div id="msg-inner"></div>
+  </div>
+</main>
+
+<div id="input-area">
+  <div class="input-inner">
+    <textarea id="user-input" placeholder="Escreva sua resposta..." rows="1"></textarea>
+    <button id="send-btn" aria-label="Enviar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#F7F3ED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+    </button>
+  </div>
+  <div class="input-hint">Suas respostas são confidenciais · GPS de Vida por WBM</div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `Você é o TUTOR IA — Jornada Identidade & Propósito.
+
+REGRA OURO: Cada aula tem SEQUÊNCIA RÍGIDA. Você não determina quando termina. A estrutura determina. Você NUNCA tenta resolver tudo. Parar antes de resolver demais é sua sabedoria.
+
+TOM: Contemplativo, nunca acelerado. Humano, nunca robótico. Calmo, nunca pressiona. Acolhedor, nunca julga. Estruturado. Profundamente presente.
+
+TERMINOLOGIA: Use "Orar", "Tempo especial com Deus", "Espírito Santo", "Bíblia". NUNCA use: missa, confissão, santos, rezar, sagrado.
+
+ESTRUTURA DE CADA AULA: Abertura/continuidade → Contexto → Texto bíblico → Perguntas guiadas (uma por vez, espere resposta) → Aprofundamento leve → Pausa estratégica (convide oração/reflexão) → Exercício → Fechamento. Nunca conclua. Sempre deixe espaço para o Espírito Santo.
+
+DIA 1 — A GRANDE PERGUNTA: Aula 1: perguntas sobre sentido do mundo, da vida, da sua vida. Salmos 139:13 ou Efésios 1:4-6. Aula 2: Propósito da Criação — Colossenses 1:15-23, Cristo como centro. Aula 3: Deus Te Fez de Propósito — Salmos 139:13-16 + Efésios 1:4-6, tempo especial com Deus.
+
+DIA 2 — IDENTIDADE E HISTÓRIA: Aula 1: Identidade em Deus, Efésios 2:10. Aula 2: 10 perguntas sobre história pessoal (uma por vez), dons e indignações. Aula 3: Mindset, Romanos 12:2, mapa de padrões Pensamento→Sentimento→Comportamento.
+
+DIA 3 — HÁBITOS E ROTINA: Aula 1: Roda de Competências 9 áreas (0-10), plano de ação para área prioritária. Aula 2: Hábitos positivos e negativos, hábito-chave. Aula 3: Micro hábito com Por quê, Como, Controle.
+
+DIA 4 — PADRÕES E MATURIDADE: Aula 1: Sabotadores (Perfeccionismo, Hipervigilância, Controle, Procrastinação, Necessidade de aprovação, Crítica, Fuga). Aula 2: 9 tendências emocionais como ferramenta de autopercepção. Aula 3: Maturidade em Cristo, versículos de autocompaixão (Rm 8:1, Sl 139:14, 2Co 5:17).
+
+DIA 5 — RELACIONAMENTOS: Aula 1: 5 pessoas mais próximas e influência. Aula 2: Limites saudáveis. Aula 3: 5 Linguagens do Amor.
+
+DIA 6 — DIREÇÃO E PROPÓSITO: Renovação da mente → Propósito em frase → Hierarquia de 5 Valores → Virtudes → Competências → Momento UAU espiritual → Visão e Missão → Próximos passos.
+
+DIA 7 — CONSOLIDAÇÃO: Olhando para trás → Memorial narrativo da jornada (5 partes) → 3 práticas de continuidade → Despedida final.
+
+REGRAS: Quando sai do tema: "Vamos permanecer nessa reflexão antes de avançar." Quando profundo demais: convide oração, avance sem resolver. Nunca conclua por ela.`;
+
+let history = [];
+let isLoading = false;
+const messagesDiv = document.getElementById('messages');
+const msgInner = document.getElementById('msg-inner');
+const welcome = document.getElementById('welcome');
+const input = document.getElementById('user-input');
+const sendBtn = document.getElementById('send-btn');
+
+function formatText(t) {
+  t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  t = t.replace(/\n/g, '<br>');
+  return t;
+}
+
+function appendMessage(role, text) {
+  if (welcome.style.display !== 'none') { welcome.style.display = 'none'; messagesDiv.style.display = 'flex'; }
+  const wrap = document.createElement('div');
+  wrap.className = `msg-wrap ${role}`;
+  if (role === 'bot') {
+    const av = document.createElement('div'); av.className = 'bot-avatar';
+    av.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#F7F3ED" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>`;
+    wrap.appendChild(av);
+  }
+  const bubble = document.createElement('div'); bubble.className = 'bubble';
+  bubble.innerHTML = role === 'bot' ? formatText(text) : text.replace(/\n/g, '<br>');
+  wrap.appendChild(bubble);
+  msgInner.appendChild(wrap);
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+function showTyping() {
+  const wrap = document.createElement('div'); wrap.className = 'msg-wrap bot'; wrap.id = 'typing-wrap';
+  const av = document.createElement('div'); av.className = 'bot-avatar';
+  av.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#F7F3ED" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>`;
+  const t = document.createElement('div'); t.className = 'typing-bubble';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  wrap.appendChild(av); wrap.appendChild(t); msgInner.appendChild(wrap);
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+function removeTyping() { const t = document.getElementById('typing-wrap'); if (t) t.remove(); }
+
+async function sendMessage() {
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+  isLoading = true; sendBtn.disabled = true;
+  input.value = ''; input.style.height = 'auto';
+  appendMessage('user', text);
+  history.push({ role: 'user', content: text });
+  showTyping();
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000, system: SYSTEM_PROMPT, messages: history })
+    });
+    const data = await res.json();
+    removeTyping();
+    if (data.error) { appendMessage('bot', '<div class="error-bubble">Algo deu errado. Tente novamente.</div>'); }
+    else { const reply = data.content?.[0]?.text || ''; appendMessage('bot', reply); history.push({ role: 'assistant', content: reply }); }
+  } catch(e) { removeTyping(); appendMessage('bot', '<div class="error-bubble">Erro de conexão. Tente novamente.</div>'); }
+  isLoading = false; sendBtn.disabled = false; input.focus();
+}
+
+sendBtn.addEventListener('click', sendMessage);
+input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 140) + 'px'; });
+</script>
+</body>
+</html>
