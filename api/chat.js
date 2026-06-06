@@ -345,22 +345,31 @@ Nunca conclua. Sempre deixe espaço para Deus.`;
 async function redisGet(key) {
   const url = `${process.env.KV_REST_API_URL}/get/${encodeURIComponent(key)}`;
   const res = await fetch(url, {
+    method: 'GET',
     headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` }
   });
+  if (!res.ok) {
+    console.error('Redis GET HTTP error:', res.status);
+    return null;
+  }
   const data = await res.json();
+  console.log('Redis GET raw:', JSON.stringify(data).slice(0, 100));
   return data.result || null;
 }
 
 async function redisSet(key, value) {
   const url = `${process.env.KV_REST_API_URL}/set/${encodeURIComponent(key)}`;
-  await fetch(url, {
+  const res = await fetch(url, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(value)
+    body: JSON.stringify({ value })
   });
+  if (!res.ok) {
+    console.error('Redis SET HTTP error:', res.status);
+  }
 }
 
 module.exports = async function handler(req, res) {
