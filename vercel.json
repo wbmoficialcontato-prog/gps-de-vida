@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/chat.js": {
+      "regions": ["gru1"]
+    }
+  },
   "rewrites": [
     { "source": "/api/chat", "destination": "/api/chat.js" }
   ]
