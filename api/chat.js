@@ -389,9 +389,28 @@ module.exports = async function handler(req, res) {
     }
 
     // Combinar histórico com mensagens da sessão atual
-    const todasMensagens = historicoSalvo.length > 0 && messages.length === 1
-      ? [...historicoSalvo, ...messages]
-      : messages;
+    let todasMensagens;
+    if (historicoSalvo.length > 0 && messages.length === 1) {
+      // Segunda sessão: usa histórico + nova mensagem, sem duplicar
+      todasMensagens = [...historicoSalvo, messages[0]];
+    } else {
+      todasMensagens = messages;
+    }
+
+    // Garantir que mensagens alternam corretamente (user/assistant)
+    // e que começa sempre com user
+    const mensagensLimpas = [];
+    let lastRole = null;
+    for (const msg of todasMensagens) {
+      if (msg.role === lastRole) continue; // remove duplicatas de role
+      if (mensagensLimpas.length === 0 && msg.role !== 'user') continue; // deve começar com user
+      mensagensLimpas.push(msg);
+      lastRole = msg.role;
+    }
+    // Deve terminar com user
+    const mensagensFinais = mensagensLimpas.length > 0 && mensagensLimpas[mensagensLimpas.length - 1].role === 'user'
+      ? mensagensLimpas
+      : mensagensLimpas.slice(0, -1);
 
     // Chamar Anthropic
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -405,7 +424,7 @@ module.exports = async function handler(req, res) {
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 800,
         system: SYSTEM_PROMPT,
-        messages: todasMensagens
+        messages: mensagensFinais
       })
     });
 
@@ -415,7 +434,7 @@ module.exports = async function handler(req, res) {
     // Salvar histórico no Upstash (últimas 40 mensagens)
     if (resposta && nome && palavraChave) {
       try {
-        const novoHistorico = [...todasMensagens, { role: 'assistant', content: resposta }].slice(-40);
+        const novoHistorico = [...mensagensFinais, { role: 'assistant', content: resposta }].slice(-40);
         await redisSet(chave, JSON.stringify(novoHistorico));
       } catch (e) {
         console.error('Erro ao salvar historico:', e.message);
